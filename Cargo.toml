@@ -10,3 +10,4 @@ maud = { version = "0.26.0", default-features = false}
 comrak = { version = "0.26.0", default-features = false, features = ["syntect"]}
 syntect = { version = "5.2.0", default-features = false, features = []}
 dotenv = "0.15.0"
+chrono = "0.4.38"

@@ -4,7 +4,7 @@ use ascii::AsciiString;
 use dotenv::dotenv;
 mod templating;
 fn main() {
-    
+
     dotenv().ok();
     let address = env::var("ADDRESS").unwrap_or("0.0.0.0".to_string());
     let port = env::var("PORT").unwrap_or("8080".to_string());
@@ -46,6 +46,16 @@ fn server_thread(server: Arc<Server>) {
 
                 let _ = request.respond(response);
             }
+            "/about" => {
+                let response = Response::from_string(templating::render_about());
+
+                let response = response.with_header(tiny_http::Header {
+                    field: "Content-Type".parse().unwrap(),
+                    value: AsciiString::from_ascii("text/html; charset=utf-8").unwrap(),
+                });
+
+                let _ = request.respond(response);
+            }
             url => {
                 if let Some(resource) = find_resource(url) {
                     let _ = request.respond(resource);
@@ -59,7 +69,8 @@ fn server_thread(server: Arc<Server>) {
 }
 
 fn find_resource(url: &str) -> Option<Response<File>> {
-    let path = format!("public{}", url);
+    let path = url.split('?').next().unwrap_or(url);
+    let path = format!("public{}", path);
 
     if let Ok(file) = File::open(&path) {
         let mut response = Response::from_file(file);
@@ -70,6 +81,8 @@ fn find_resource(url: &str) -> Option<Response<File>> {
                 "html" => "text/html",
                 "js" => "text/javascript",
                 "png" => "image/png",
+                "svg" => "image/svg+xml",
+                "json" => "application/json",
                 _ => "text/plain",
             };
 
