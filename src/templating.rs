@@ -68,8 +68,10 @@ pub fn render_about() -> Markup {
         html {
             (render_header(&TemplateHeaderData{title: "About", styles: None}))
             body {
-                h1 { "About Us" }
-                p { "This is the about page." }
+                article {
+                    h1 { "About Us" }
+                    p { "This is the about page." }
+                }
             }
         }
     }

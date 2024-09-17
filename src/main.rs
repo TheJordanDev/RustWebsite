@@ -10,7 +10,7 @@ fn main() {
     let port = env::var("PORT").unwrap_or("8080".to_string());
 
     let server = Arc::new(Server::http(format!("{}:{}", address, port)).unwrap());
-    println!("Listening on port {}", port);
+    println!("Server started on http://localhost:{}", port);
 
     let mut handlers = Vec::new();
 
