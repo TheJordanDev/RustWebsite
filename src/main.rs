@@ -3,11 +3,19 @@ use tiny_http::{Request, Response, Server, StatusCode};
 use ascii::AsciiString;
 use dotenv::dotenv;
 mod templating;
+mod scss_compiler;
+
 fn main() {
 
     dotenv().ok();
     let address = env::var("ADDRESS").unwrap_or("0.0.0.0".to_string());
     let port = env::var("PORT").unwrap_or("8080".to_string());
+
+    let scss_compiler = scss_compiler::ScssCompiler::new(
+        "public/assets/scss/styles.scss",
+        "public/assets/css/styles.css",
+    );
+    scss_compiler.compile_if_needed();
 
     let server = Arc::new(Server::http(format!("{}:{}", address, port)).unwrap());
     println!("Server started on http://localhost:{}", port);
@@ -18,7 +26,8 @@ fn main() {
         println!("Starting thread {}", thread_num);
 
         let server = server.clone();
-        handlers.push(thread::spawn(move || server_thread(server)));
+        let scss_compiler = scss_compiler.clone();
+        handlers.push(thread::spawn(move || server_thread(server, scss_compiler)));
     }
 
     for handler in handlers {
@@ -27,7 +36,7 @@ fn main() {
 
 }
 
-fn server_thread(server: Arc<Server>) {
+fn server_thread(server: Arc<Server>, scss_compiler: scss_compiler::ScssCompiler) {
     for request in server.incoming_requests() {
         println!(
             "Received request! Method: {:?}, Url: {:?} ",
@@ -35,9 +44,11 @@ fn server_thread(server: Arc<Server>) {
             request.url()
         );
 
+        scss_compiler.compile_if_needed();
+
         match request.url() {
             "" | "/" => {
-                let response = Response::from_string(templating::render_home());
+                let response = Response::from_string(templating::render_home(request.url()));
 
                 let response = response.with_header(tiny_http::Header {
                     field: "Content-Type".parse().unwrap(),
@@ -47,7 +58,7 @@ fn server_thread(server: Arc<Server>) {
                 let _ = request.respond(response);
             }
             "/about" => {
-                let response = Response::from_string(templating::render_about());
+                let response = Response::from_string(templating::render_about(request.url()));
 
                 let response = response.with_header(tiny_http::Header {
                     field: "Content-Type".parse().unwrap(),
