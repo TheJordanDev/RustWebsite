@@ -18,13 +18,13 @@ fn main() {
     println!("cargo:rerun-if-changed={}", final_binary.display());
 
     // Print out the path for debugging purposes
-    println!("cargo:warning=Final binary will be at: {:?}", final_binary);
+    println!("cargo:info=Final binary will be at: {:?}", final_binary);
 
     if final_binary.exists() {
-        println!("cargo:warning=Binary found: {:?}", final_binary);
-        println!("cargo:warning=Copying the binary to {:?}", current_dir.join(binary_name));
+        println!("cargo:info=Binary found: {:?}", final_binary);
+        println!("cargo:info=Copying the binary to {:?}", current_dir.join(binary_name));
         fs::copy(final_binary, current_dir.join(binary_name)).unwrap();
     } else {
-        println!("cargo:warning=Binary not found: {:?}", final_binary);
+        println!("cargo:info=Binary not found: {:?}", final_binary);
     }
 }
